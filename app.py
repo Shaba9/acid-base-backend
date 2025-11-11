@@ -20,8 +20,8 @@ def get_ph(bicarbonate: float = Query(...), pco2: float = Query(...)):
 def get_matching_pairs(pH: float = Query(...)) -> Dict[str, List[Dict[str, float]]]:
     pairs = []
 
-    for b in range(10, 41):  # bicarbonate range
-        for p in range(20, 81):  # pCO2 range
+    for b in range(22, 29):  # bicarbonate range
+        for p in range(34, 46):  # pCO2 range
             calc_ph = calculate_pH(b, p)
             if abs(calc_ph - pH) < 0.01:
                 pairs.append({"bicarb": b, "pco2": p})
