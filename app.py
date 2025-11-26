@@ -2,6 +2,7 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from utils.calculations import calculate_pH
 from typing import List, Dict
+import numpy as np
 
 app = FastAPI()
 
@@ -16,14 +17,19 @@ app.add_middleware(
 def get_ph(bicarbonate: float = Query(...), pco2: float = Query(...)):
     return {"pH": calculate_pH(bicarbonate, pco2)}
 
-@app.get("/matching-pairs")
-def get_matching_pairs(pH: float = Query(...)) -> Dict[str, List[Dict[str, float]]]:
-    pairs = []
-
-    for b in range(22, 29):  # bicarbonate range
-        for p in range(34, 46):  # pCO2 range
-            calc_ph = calculate_pH(b, p)
-            if abs(calc_ph - pH) < 0.01:
-                pairs.append({"bicarb": b, "pco2": p})
-
-    return {"pairs": pairs}
+@app.get("/matching-combos")
+def get_matching_combos(pH: float = Query(...)) -> Dict[str, List[Dict[str, float]]]:
+    combos = []
+    for b in range(10, 41):  # bicarbonate range
+        for vco2 in range(100, 1201, 100):  # CO2 production range
+            for va in range(1, 16):  # alveolar ventilation range
+                pco2 = (vco2 * 0.863) / va
+                calc_ph = calculate_pH(b, pco2)
+                if abs(calc_ph - pH) < 0.01:
+                    combos.append({
+                        "bicarbonate": b,
+                        "vco2": vco2,
+                        "va": va,
+                        "pco2": pco2
+                    })
+    return {"combos": combos}
